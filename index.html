@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSage — AI Code Explainer & Bug Fixer</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Syne (display) + JetBrains Mono (code) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== BACKGROUND GRID ===== -->
+  <div class="bg-grid"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">⟨/⟩</span>
+      <span class="logo-text">CodeSage</span>
+    </div>
+    <p class="tagline">AI-powered coding companion for beginners</p>
+  </header>
+
+  <!-- ===== TABS ===== -->
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="explain" role="tab" aria-selected="true">
+      <span class="tab-icon">🔍</span> Explain Code
+    </button>
+    <button class="tab" data-tab="fix" role="tab" aria-selected="false">
+      <span class="tab-icon">🐛</span> Fix Bug
+    </button>
+    <button class="tab" data-tab="ask" role="tab" aria-selected="false">
+      <span class="tab-icon">💬</span> Ask Doubt
+    </button>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main>
+
+    <!-- ---- EXPLAIN CODE PANEL ---- -->
+    <section class="panel active" id="panel-explain">
+      <div class="panel-inner">
+        <div class="input-col">
+          <label class="field-label">Paste your code below</label>
+          <div class="code-wrap">
+            <textarea
+              id="explain-input"
+              class="code-input"
+              placeholder="// Paste any code here...
+function greet(name) {
+  return 'Hello, ' + name;
+}"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="field-row">
+            <select id="explain-lang" class="lang-select">
+              <option value="auto">Auto-detect language</option>
+              <option value="JavaScript">JavaScript</option>
+              <option value="Python">Python</option>
+              <option value="Java">Java</option>
+              <option value="C++">C++</option>
+              <option value="TypeScript">TypeScript</option>
+              <option value="HTML/CSS">HTML/CSS</option>
+              <option value="SQL">SQL</option>
+            </select>
+            <button class="btn-primary" id="btn-explain">
+              <span class="btn-text">Explain Code</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </div>
+        <div class="output-col">
+          <label class="field-label">AI Explanation</label>
+          <div class="output-box" id="explain-output">
+            <div class="placeholder-msg">
+              <span class="ph-icon">🤖</span>
+              <p>Paste your code and hit <strong>Explain Code</strong> to get a beginner-friendly breakdown.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- FIX BUG PANEL ---- -->
+    <section class="panel" id="panel-fix">
+      <div class="panel-inner">
+        <div class="input-col">
+          <label class="field-label">Paste your buggy code or error message</label>
+          <div class="code-wrap">
+            <textarea
+              id="fix-input"
+              class="code-input"
+              placeholder="// Paste buggy code or error below...
+// Example:
+function add(a, b) {
+  return a - b; // wrong operator!
+}
+console.log(add(2, 3)); // Expected 5, got -1"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="field-row">
+            <input
+              id="fix-context"
+              class="context-input"
+              type="text"
+              placeholder="Optional: describe what the code should do..."
+            />
+            <button class="btn-primary btn-fix" id="btn-fix">
+              <span class="btn-text">Fix Bug</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </div>
+        <div class="output-col">
+          <label class="field-label">AI Bug Analysis & Fix</label>
+          <div class="output-box" id="fix-output">
+            <div class="placeholder-msg">
+              <span class="ph-icon">🔧</span>
+              <p>Paste your buggy code or error message and hit <strong>Fix Bug</strong> to diagnose and fix it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- ASK DOUBT PANEL ---- -->
+    <section class="panel" id="panel-ask">
+      <div class="chat-layout">
+        <!-- Chat messages window -->
+        <div class="chat-window" id="chat-window">
+          <div class="chat-msg bot-msg">
+            <div class="avatar">🤖</div>
+            <div class="bubble">
+              Hi! I'm CodeSage 👋<br>
+              Ask me anything about coding — I'll explain it in simple, beginner-friendly language!<br><br>
+              <em>Examples: "What is a loop?", "How does async/await work?", "Explain recursion with an example"</em>
+            </div>
+          </div>
+        </div>
+        <!-- Chat input -->
+        <div class="chat-input-row">
+          <textarea
+            id="ask-input"
+            class="ask-textarea"
+            placeholder="Ask a coding question... (Press Enter to send, Shift+Enter for new line)"
+            rows="2"
+          ></textarea>
+          <button class="btn-send" id="btn-ask" title="Send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== LOADING OVERLAY ===== -->
+  <div class="loading-overlay" id="loading-overlay" hidden>
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <p class="loading-text" id="loading-text">Thinking...</p>
+    </div>
+  </div>
+
+  <!-- ===== TOAST NOTIFICATION ===== -->
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    Built with ❤️ using Node.js + Express + OpenRouter AI &nbsp;|&nbsp; CodeSage v1.0
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
