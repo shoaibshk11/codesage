@@ -29,13 +29,14 @@ app.use(cors());                    // Allow frontend (same origin or different 
 app.use(express.json());            // Parse JSON request bodies
 app.use(express.static("."));       // Serve index.html, style.css, script.js from same folder
 
-// ─── Your API key (loaded from .env) ──────────────────────────────────────────
-// 👇 IMPORTANT: Replace "your_api_key_here" in .env with your real OpenRouter key
-const API_KEY   = process.env.OPENROUTER_API_KEY || "your_api_key_here";
+// ─── Your API key (loaded from .env or Railway Variables) ─────────────────────
+const API_KEY = process.env.OPENROUTER_API_KEY || "";
 
-// The model to use (free tier on OpenRouter)
-// You can change this to any model listed at https://openrouter.ai/models
-const AI_MODEL  = "meta-llama/llama-3.1-8b-instruct:free";  // Free model
+// Log first 8 chars on startup so you can verify it loaded correctly
+console.log("🔑 API Key loaded:", API_KEY ? `${API_KEY.substring(0, 8)}...` : "❌ NOT SET — add OPENROUTER_API_KEY to Railway Variables");
+
+// The model to use — using a stable free model on OpenRouter
+const AI_MODEL = "google/gemma-3-4b-it:free";
 
 // OpenRouter API URL
 const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions";
