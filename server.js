@@ -30,8 +30,8 @@ app.use(express.static("."));
 const HF_API_KEY = process.env.HF_API_KEY || "";
 console.log("🔑 HF API Key loaded:", HF_API_KEY ? `${HF_API_KEY.substring(0, 8)}...` : "❌ NOT SET — add HF_API_KEY to Railway Variables");
 
-const HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3";
-const HF_API_URL = `https://router.huggingface.co/hf-inference/v1/chat/completions`;
+const HF_MODEL   = "meta-llama/Llama-3.1-8B-Instruct:cerebras";
+const HF_API_URL = "https://router.huggingface.co/v1/chat/completions";
 console.log(`🤖 Model: ${HF_MODEL}`);
 
 async function callAI(messages) {
