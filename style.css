@@ -31,6 +31,9 @@
 html { scroll-behavior: smooth; }
 
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -137,6 +140,7 @@ header {
 main {
   position: relative;
   z-index: 1;
+  flex: 1;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 60px;
