@@ -36,7 +36,7 @@ const API_KEY = process.env.OPENROUTER_API_KEY || "";
 console.log("🔑 API Key loaded:", API_KEY ? `${API_KEY.substring(0, 8)}...` : "❌ NOT SET — add OPENROUTER_API_KEY to Railway Variables");
 
 // The model to use — using a stable free model on OpenRouter
-const AI_MODEL = "mistralai/mistral-7b-instruct:free";
+const AI_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
 // OpenRouter API URL
 const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions";
