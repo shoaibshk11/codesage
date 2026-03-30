@@ -22,26 +22,18 @@ const fetch   = require("node-fetch");
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 app.use(express.static("."));
 
-// ─── Hugging Face API Key (from .env or Railway Variables) ────────────────────
+// Hugging Face API Key
 const HF_API_KEY = process.env.HF_API_KEY || "";
 console.log("🔑 HF API Key loaded:", HF_API_KEY ? `${HF_API_KEY.substring(0, 8)}...` : "❌ NOT SET — add HF_API_KEY to Railway Variables");
 
-// ─── Model: Mistral 7B on Hugging Face (reliable + free) ──────────────────────
 const HF_MODEL   = "mistralai/Mistral-7B-Instruct-v0.3";
-const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}/v1/chat/completions`;
-
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}/v1/chat/completions`;
 console.log(`🤖 Model: ${HF_MODEL}`);
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  HELPER: Call Hugging Face Inference API
-//  Uses the OpenAI-compatible /v1/chat/completions endpoint
-// ═══════════════════════════════════════════════════════════════════════════════
 async function callAI(messages) {
   const response = await fetch(HF_API_URL, {
     method:  "POST",
@@ -61,55 +53,27 @@ async function callAI(messages) {
   if (!response.ok) {
     const errBody = await response.text();
     console.error("HuggingFace API error:", errBody);
-
-    // Give a helpful error message based on status code
     if (response.status === 401) throw new Error("Invalid HF API key. Check your HF_API_KEY variable.");
     if (response.status === 503) throw new Error("Model is loading, please try again in 20 seconds.");
     if (response.status === 429) throw new Error("Rate limit hit. Please wait a moment and try again.");
     throw new Error(`AI API returned status ${response.status}.`);
   }
 
-  const data = await response.json();
-
+  const data  = await response.json();
   const reply = data?.choices?.[0]?.message?.content;
   if (!reply) throw new Error("Empty response from AI. Try again.");
-
   return reply.trim();
 }
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  ROUTE 1: POST /api/explain
-// ═══════════════════════════════════════════════════════════════════════════════
 app.post("/api/explain", async (req, res) => {
   const { code, lang } = req.body;
-
-  if (!code || code.trim().length === 0) {
-    return res.status(400).json({ error: "No code provided." });
-  }
-
+  if (!code || !code.trim()) return res.status(400).json({ error: "No code provided." });
   const language = (lang && lang !== "auto") ? `written in ${lang}` : "";
-
-  const prompt = `You are CodeSage, a friendly coding tutor for beginners.
-Explain the following code ${language} in a simple, step-by-step way.
-
-Structure your answer like this:
-1. **What does this code do?** (one short sentence)
-2. **Step-by-step explanation** (go through each important part)
-3. **Key concepts used**
-4. **Beginner tip**
-
-Code:
-\`\`\`
-${code}
-\`\`\`
-
-Keep it simple. No jargon. Use analogies where helpful.`;
-
+  const prompt = `You are CodeSage, a friendly coding tutor for beginners.\nExplain the following code ${language} in a simple, step-by-step way.\n\nStructure:\n1. **What does this code do?**\n2. **Step-by-step explanation**\n3. **Key concepts used**\n4. **Beginner tip**\n\nCode:\n\`\`\`\n${code}\n\`\`\`\nKeep it simple. No jargon.`;
   try {
     const result = await callAI([
-      { role: "system",  content: "You are CodeSage, a friendly coding tutor who explains code simply for beginners." },
-      { role: "user",    content: prompt }
+      { role: "system", content: "You are CodeSage, a friendly coding tutor who explains code simply for beginners." },
+      { role: "user",   content: prompt }
     ]);
     res.json({ result });
   } catch (err) {
@@ -118,38 +82,15 @@ Keep it simple. No jargon. Use analogies where helpful.`;
   }
 });
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  ROUTE 2: POST /api/fix
-// ═══════════════════════════════════════════════════════════════════════════════
 app.post("/api/fix", async (req, res) => {
   const { code, context } = req.body;
-
-  if (!code || code.trim().length === 0) {
-    return res.status(400).json({ error: "No code provided." });
-  }
-
+  if (!code || !code.trim()) return res.status(400).json({ error: "No code provided." });
   const contextStr = context ? `\nExpected behavior: ${context}` : "";
-
-  const prompt = `You are CodeSage, a debugging expert and patient teacher.
-Analyse this buggy code and fix it.${contextStr}
-
-Respond in this format:
-1. **🐛 What's the bug?**
-2. **Why did this happen?**
-3. **✅ Fixed code** (in a code block)
-4. **What changed?**
-5. **Tip to avoid this in future**
-
-Buggy code:
-\`\`\`
-${code}
-\`\`\``;
-
+  const prompt = `You are CodeSage, a debugging expert.\nAnalyse this buggy code and fix it.${contextStr}\n\nFormat:\n1. **What's the bug?**\n2. **Why did this happen?**\n3. **Fixed code** (in a code block)\n4. **What changed?**\n5. **Tip to avoid this**\n\nBuggy code:\n\`\`\`\n${code}\n\`\`\``;
   try {
     const result = await callAI([
-      { role: "system",  content: "You are CodeSage, an expert debugger who explains bugs in simple beginner-friendly terms." },
-      { role: "user",    content: prompt }
+      { role: "system", content: "You are CodeSage, an expert debugger who explains bugs in simple beginner-friendly terms." },
+      { role: "user",   content: prompt }
     ]);
     res.json({ result });
   } catch (err) {
@@ -158,26 +99,10 @@ ${code}
   }
 });
 
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  ROUTE 3: POST /api/ask
-// ═══════════════════════════════════════════════════════════════════════════════
 app.post("/api/ask", async (req, res) => {
   const { history } = req.body;
-
-  if (!history || !Array.isArray(history) || history.length === 0) {
-    return res.status(400).json({ error: "No message provided." });
-  }
-
-  const systemMsg = {
-    role:    "system",
-    content: `You are CodeSage, a friendly coding mentor for beginners.
-Always explain in simple plain English.
-Use short sentences and real-world analogies.
-Show code examples in code blocks.
-Be encouraging and supportive!`
-  };
-
+  if (!history || !Array.isArray(history) || history.length === 0) return res.status(400).json({ error: "No message provided." });
+  const systemMsg = { role: "system", content: "You are CodeSage, a friendly coding mentor for beginners. Always explain in simple plain English. Use analogies. Show code in code blocks. Be encouraging!" };
   try {
     const result = await callAI([systemMsg, ...history]);
     res.json({ result });
@@ -187,14 +112,10 @@ Be encouraging and supportive!`
   }
 });
 
-
-// ─── Health check ──────────────────────────────────────────────────────────────
 app.get("/health", (req, res) => {
   res.json({ status: "ok", model: HF_MODEL, apiKeySet: !!HF_API_KEY });
 });
 
-
-// ─── Start server ──────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("  🚀 CodeSage server running!");
