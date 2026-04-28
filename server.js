@@ -24,7 +24,12 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("."));
+app.use(express.static(__dirname));
+
+// Serve index.html for root route
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
 
 // Hugging Face API Key
 const HF_API_KEY = process.env.HF_API_KEY || "";
